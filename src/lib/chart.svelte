@@ -50,27 +50,36 @@
         const oneDay = 24 * 3600 * 1000;
         let time = Date.now() - days * oneDay;
         let price = 100;
-        let bias = Math.random() < 0.5 ? -1 : 1;
 
         for (let i = 0; i < days; i++) {
-            const volatility = Math.random() * 5 + 1;
+            const volatility = Math.random() * 15 + 1;
             const open = price;
-            const change = (Math.random() - 0.5 + 0.1 * bias) * volatility;
+            const change = (Math.random() - 0.5) * volatility;
             const close = open + change;
             const high = Math.max(open, close) + Math.random() * 2;
             const low = Math.min(open, close) - Math.random() * 2;
             const volume = Math.floor(Math.random() * 9000 + 1000);
-            ohlc.push([time, +open.toFixed(2), +high.toFixed(2), +low.toFixed(2), +close.toFixed(2)]);
             const color = close > open ? 'green' : 'red';
-            volumeData.push({ x: time, y: volume, color });
+
+            ohlc.push([
+                time,
+                +open.toFixed(2),
+                +high.toFixed(2),
+                +low.toFixed(2),
+                +close.toFixed(2)
+            ]);
+            volumeData.push({
+                x: time,
+                y: volume,
+                color
+            });
+
             price = close;
             time += oneDay;
-            if (i % 30 === 0) bias *= -1;
         }
 
         return { ohlc, volumeData };
     }
-
 
     function loadChartForTicker(ticker) {
         const { ohlc, volumeData } = generateRandomOHLCData();
