@@ -61,7 +61,8 @@
             const low = Math.min(open, close) - Math.random() * 2;
             const volume = Math.floor(Math.random() * 9000 + 1000);
             ohlc.push([time, +open.toFixed(2), +high.toFixed(2), +low.toFixed(2), +close.toFixed(2)]);
-            volumeData.push([time, volume]);
+            const color = close > open ? 'green' : 'red';
+            volumeData.push({ x: time, y: volume, color });
             price = close;
             time += oneDay;
             if (i % 30 === 0) bias *= -1;
@@ -70,19 +71,20 @@
         return { ohlc, volumeData };
     }
 
+
     function loadChartForTicker(ticker) {
         const { ohlc, volumeData } = generateRandomOHLCData();
         // Reset SMA state
         Object.keys(smaState).forEach(k => smaState[k] = false);
 
-        chartRef = window.Highcharts.stockChart('container', {
+        chartRef = Highcharts.stockChart('container', {
             title: { text: `Stock Chart: ${ticker}` },
             yAxis: [{
                 labels: { align: 'left' },
-                height: '80%',
+                height: '100%',
                 resize: { enabled: true }
             }, {
-                labels: { align: 'left' },
+                labels: { enabled: false },
                 top: '80%',
                 height: '20%',
                 offset: 0
@@ -100,11 +102,13 @@
                 id: 'price-series',
                 name: `${ticker} Price`,
                 data: ohlc
-            }, {
+            },
+            {
                 type: 'column',
                 name: `${ticker} Volume`,
                 data: volumeData,
-                yAxis: 1
+                yAxis: 1,
+                colorByPoint: false
             }]
         });
     }
@@ -118,7 +122,10 @@
                 linkedTo: 'price-series',
                 params: { period },
                 id,
-                name: `SMA ${period}`
+                name: `SMA ${period}`,
+                animation: false,
+                marker: { enabled: false },
+                enableMouseTracking: false,       // Disable hover marker & tooltip
             });
         } else {
             const smaSeries = chartRef.get(id);
